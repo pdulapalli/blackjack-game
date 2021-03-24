@@ -1,0 +1,37 @@
+version: "2.2"
+services:
+  blackjack_service:
+    container_name: blackjack_service_${ENV_NAME}
+    build:
+      context: .
+      target: "${ENV_NAME}"
+    depends_on:
+      blackjack_db:
+        condition: service_healthy
+    environment:
+      DB_HOST: "${DB_HOST}"
+      DB_PORT: "${DB_PORT}"
+      DB_NAME: "${DB_NAME}"
+      DB_USERNAME: "${DB_USERNAME}"
+      DB_PASSWORD: "${DB_PASSWORD}"
+      DB_URL: "mysql://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}"
+    volumes:
+      - "${WORKSPACE_VOL_MAP}"
+    ports:
+      - "3000:3000"
+  blackjack_db:
+    container_name: "blackjack_db_${ENV_NAME}"
+    image: mysql:5.7
+    environment:
+      MYSQL_DATABASE: "${DB_NAME}"
+      MYSQL_ROOT_PASSWORD: "${DB_PASSWORD}"
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+    volumes:
+      - blackjack_db_volume:/var/lib/mysql
+    ports:
+      - "3306:3306"
+volumes:
+  blackjack_db_volume:
