@@ -6,3 +6,68 @@ datasource db {
 generator client {
   provider = "prisma-client-js"
 }
+
+// Define card value
+model Card {
+  id     Int      @id @default(autoincrement())
+  handId Int?
+  deckId Int?
+  hand   Hand?    @relation(fields: [handId], references: [id])
+  deck   Deck?    @relation(fields: [deckId], references: [id])
+  type   CardType
+  value  Int
+}
+
+// Track cards in participant hands
+model Hand {
+  id          Int          @id @default(autoincrement())
+  Participant Participant?
+  cards       Card[]
+}
+
+// Represent the deck being used
+model Deck {
+  id    Int    @id @default(autoincrement())
+  cards Card[]
+}
+
+// Can represent either players or dealers
+model Participant {
+  id          Int    @id @default(autoincrement())
+  name        String
+  handId      Int
+  hand        Hand   @relation(fields: [handId], references: [id])
+  playingGame Game?  @relation("PlayingRel")
+  dealingGame Game?  @relation("DealingRel")
+  role        Role
+}
+
+// Monitor overall game state
+model Game {
+  id          Int         @id @default(autoincrement())
+  currentTurn Role
+  winner      WinState
+  playerId    Int
+  dealerId    Int
+  player      Participant @relation(name: "PlayingRel", fields: [playerId], references: [id])
+  dealer      Participant @relation(name: "DealingRel", fields: [dealerId], references: [id])
+}
+
+// Some enumerations to make certain attribute values a little easier to reason
+// about.
+enum WinState {
+  PLAYER_WIN
+  DEALER_WIN
+  PENDING
+}
+
+enum Role {
+  PLAYER
+  DEALER
+}
+
+enum CardType {
+  FACECARD
+  SPOT
+  ACE
+}
