@@ -6,3 +6,46 @@ datasource db {
 generator client {
   provider = "prisma-client-js"
 }
+
+// Track card-hand values
+model Hand {
+  id             Int          @id @default(autoincrement())
+  spotCardsValue Int
+  faceCardsValue Int
+  aceCount       Int
+  numCardsHeld   Int
+  Participant    Participant?
+}
+
+// Can represent either players or dealers
+model Participant {
+  id            Int    @id @default(autoincrement())
+  name          String
+  currentHandId Int
+  currentHand   Hand   @relation(fields: [currentHandId], references: [id])
+  playingGame   Game?  @relation("PlayingRel")
+  dealingGame   Game?  @relation("DealingRel")
+  role          Role
+}
+
+// Monitor overall game state
+model Game {
+  id          Int         @id @default(autoincrement())
+  currentTurn Role
+  winner      WinState
+  playerId    Int
+  dealerId    Int
+  player      Participant @relation(name: "PlayingRel", fields: [playerId], references: [id])
+  dealer      Participant @relation(name: "DealingRel", fields: [dealerId], references: [id])
+}
+
+enum WinState {
+  PLAYER_WIN
+  DEALER_WIN
+  PENDING
+}
+
+enum Role {
+  PLAYER
+  DEALER
+}
