@@ -21,8 +21,7 @@ Replace `<envName>` with `dev` or `production`, as desired.
 In a terminal session, please run:
 
 ```
-export ENV_NAME=<envName>
-docker-compose --env-file "./config/${ENV_NAME}.env" --file docker-compose.yml up --build --detach
+./run start <envName>
 ```
 
 ### Logs
