@@ -28,7 +28,7 @@ export class ParticipantService {
         role: createInfo.role,
         hand: {
           create: {
-            // id: null,
+            type: 'HAND',
           },
         },
       },
