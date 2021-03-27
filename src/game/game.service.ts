@@ -1,5 +1,6 @@
 import { Game, Prisma } from '.prisma/client';
 import { Injectable } from '@nestjs/common';
+import { IdDto } from 'src/shared/dto/id.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { GameStartDto } from './dto/game.dto';
 
@@ -7,11 +8,11 @@ import { GameStartDto } from './dto/game.dto';
 export class GameService {
   constructor(private prisma: PrismaService) {}
 
-  async retrieveGame(
-    gameWhereUniqueInput: Prisma.GameWhereUniqueInput,
-  ): Promise<Game> {
+  async retrieveGame({ id }: IdDto): Promise<Game> {
     return this.prisma.game.findUnique({
-      where: gameWhereUniqueInput,
+      where: {
+        id: Number.parseInt(id, 10),
+      },
     });
   }
 

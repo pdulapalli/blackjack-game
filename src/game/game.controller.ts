@@ -10,9 +10,7 @@ export class GameController {
 
   @Get(':id')
   retrieveGame(@Param() params: IdDto): Promise<GameModel> {
-    return this.gameSvc.retrieveGame({
-      id: Number.parseInt(params.id, 10),
-    });
+    return this.gameSvc.retrieveGame(params);
   }
 
   @Post()
