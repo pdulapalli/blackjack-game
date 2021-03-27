@@ -1,6 +1,7 @@
 import { Game, Prisma } from '.prisma/client';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { GameStartDto } from './dto/game.dto';
 
 @Injectable()
 export class GameService {
@@ -14,9 +15,22 @@ export class GameService {
     });
   }
 
-  async createGame(data: Prisma.GameCreateInput): Promise<Game> {
+  async createGame(createInfo: GameStartDto): Promise<Game> {
     return this.prisma.game.create({
-      data,
+      data: {
+        currentTurn: 'PLAYER',
+        winner: 'PENDING',
+        dealer: {
+          connect: {
+            id: createInfo.dealerId,
+          },
+        },
+        player: {
+          connect: {
+            id: createInfo.playerId,
+          },
+        },
+      },
     });
   }
 }

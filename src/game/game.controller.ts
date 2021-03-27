@@ -17,19 +17,6 @@ export class GameController {
 
   @Post()
   startGame(@Body() data: GameStartDto): Promise<GameModel> {
-    return this.gameSvc.createGame({
-      currentTurn: 'PLAYER',
-      winner: 'PENDING',
-      dealer: {
-        connect: {
-          id: data.dealerId,
-        },
-      },
-      player: {
-        connect: {
-          id: data.playerId,
-        },
-      },
-    });
+    return this.gameSvc.createGame(data);
   }
 }
