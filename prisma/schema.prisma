@@ -9,38 +9,31 @@ generator client {
 
 // Define card value
 model Card {
-  id     Int      @id @default(autoincrement())
-  handId Int?
-  deckId Int?
-  hand   Hand?    @relation(fields: [handId], references: [id])
-  deck   Deck?    @relation(fields: [deckId], references: [id])
-  type   CardType
-  value  Int
+  id           Int         @id @default(autoincrement())
+  collectionId Int?
+  collection   Collection? @relation(fields: [collectionId], references: [id])
+  type         CardType
+  value        Int
 }
 
-// Track cards in participant hands
-model Hand {
-  id          Int          @id @default(autoincrement())
+// Track cards in deck or participant hand as appropriate
+model Collection {
+  id          Int            @id @default(autoincrement())
   Participant Participant?
   cards       Card[]
-}
-
-// Represent the deck being used
-model Deck {
-  id    Int    @id @default(autoincrement())
-  cards Card[]
+  type        CollectionType
 }
 
 // Can represent either players or dealers
 model Participant {
-  id          Int    @id @default(autoincrement())
+  id          Int        @id @default(autoincrement())
   name        String
   handId      Int
-  hand        Hand   @relation(fields: [handId], references: [id])
-  playingGame Game?  @relation("PlayingRel")
-  dealingGame Game?  @relation("DealingRel")
+  hand        Collection @relation(fields: [handId], references: [id])
+  playingGame Game?      @relation("PlayingRel")
+  dealingGame Game?      @relation("DealingRel")
   role        Role
-  money       Int    @default(0)
+  money       Int        @default(0)
 }
 
 // Monitor overall game state
@@ -71,4 +64,9 @@ enum CardType {
   FACECARD
   SPOT
   ACE
+}
+
+enum CollectionType {
+  DECK
+  HAND
 }
