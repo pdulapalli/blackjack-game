@@ -40,13 +40,14 @@ model Participant {
   playingGame Game?  @relation("PlayingRel")
   dealingGame Game?  @relation("DealingRel")
   role        Role
+  money       Int    @default(0)
 }
 
 // Monitor overall game state
 model Game {
   id          Int         @id @default(autoincrement())
-  currentTurn Role
-  winner      WinState
+  currentTurn Role        @default(PLAYER)
+  winner      WinState    @default(PENDING)
   playerId    Int
   dealerId    Int
   player      Participant @relation(name: "PlayingRel", fields: [playerId], references: [id])
