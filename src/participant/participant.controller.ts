@@ -21,7 +21,9 @@ export class ParticipantController {
   }
 
   @Post()
-  createPlayer(@Body() data: ParticipantCreateDto): Promise<ParticipantModel> {
+  createParticipant(
+    @Body() data: ParticipantCreateDto,
+  ): Promise<ParticipantModel> {
     return this.participantSvc.createParticipant(data);
   }
 }
