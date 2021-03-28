@@ -8,6 +8,11 @@ import { ParticipantService } from './participant.service';
 export class ParticipantController {
   constructor(private readonly participantSvc: ParticipantService) {}
 
+  @Get('list')
+  listAllParticipants(): Promise<ParticipantModel[]> {
+    return this.participantSvc.retrieveAllParticipants();
+  }
+
   @Get(':id')
   getParticipant(@Param() params: IdDto): Promise<ParticipantModel> {
     return this.participantSvc.retrieveParticipant({
@@ -16,7 +21,9 @@ export class ParticipantController {
   }
 
   @Post()
-  createPlayer(@Body() data: ParticipantCreateDto): Promise<ParticipantModel> {
+  createParticipant(
+    @Body() data: ParticipantCreateDto,
+  ): Promise<ParticipantModel> {
     return this.participantSvc.createParticipant(data);
   }
 }

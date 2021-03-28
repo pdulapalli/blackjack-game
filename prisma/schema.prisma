@@ -9,54 +9,50 @@ generator client {
 
 // Define card value
 model Card {
-  id     Int      @id @default(autoincrement())
-  handId Int?
-  deckId Int?
-  hand   Hand?    @relation(fields: [handId], references: [id])
-  deck   Deck?    @relation(fields: [deckId], references: [id])
-  type   CardType
-  value  Int
+  id           Int         @id @default(autoincrement())
+  collectionId Int?
+  collection   Collection? @relation(fields: [collectionId], references: [id])
+  type         CardType
+  value        Int
 }
 
-// Track cards in participant hands
-model Hand {
-  id          Int          @id @default(autoincrement())
+// Track cards in deck or participant hand as appropriate
+model Collection {
+  id          Int            @id @default(autoincrement())
   Participant Participant?
+  Game        Game?
   cards       Card[]
-}
-
-// Represent the deck being used
-model Deck {
-  id    Int    @id @default(autoincrement())
-  cards Card[]
+  type        CollectionType
 }
 
 // Can represent either players or dealers
 model Participant {
-  id          Int    @id @default(autoincrement())
+  id          Int        @id @default(autoincrement())
   name        String
   handId      Int
-  hand        Hand   @relation(fields: [handId], references: [id])
-  playingGame Game?  @relation("PlayingRel")
-  dealingGame Game?  @relation("DealingRel")
+  hand        Collection @relation(fields: [handId], references: [id])
+  playingGame Game?      @relation("PlayingRel")
+  dealingGame Game?      @relation("DealingRel")
   role        Role
-  money       Int    @default(0)
+  money       Int        @default(0)
 }
 
 // Monitor overall game state
 model Game {
-  id          Int         @id @default(autoincrement())
-  currentTurn Role        @default(PLAYER)
-  winner      WinState    @default(PENDING)
+  id          Int          @id @default(autoincrement())
+  currentTurn Role         @default(PLAYER)
+  outcome     OutcomeState @default(PENDING)
+  deckId      Int
+  deck        Collection   @relation(fields: [deckId], references: [id])
   playerId    Int
   dealerId    Int
-  player      Participant @relation(name: "PlayingRel", fields: [playerId], references: [id])
-  dealer      Participant @relation(name: "DealingRel", fields: [dealerId], references: [id])
+  player      Participant  @relation(name: "PlayingRel", fields: [playerId], references: [id])
+  dealer      Participant  @relation(name: "DealingRel", fields: [dealerId], references: [id])
 }
 
 // Some enumerations to make certain attribute values a little easier to reason
 // about.
-enum WinState {
+enum OutcomeState {
   PLAYER_WIN
   DEALER_WIN
   PENDING
@@ -71,4 +67,9 @@ enum CardType {
   FACECARD
   SPOT
   ACE
+}
+
+enum CollectionType {
+  DECK
+  HAND
 }

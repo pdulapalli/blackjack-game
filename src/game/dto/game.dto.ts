@@ -1,11 +1,12 @@
 import { IsInt } from 'class-validator';
 
-class GameStartDto {
+export class GameStartDto {
   @IsInt()
   playerId: number;
 
   @IsInt()
   dealerId: number;
-}
 
-export { GameStartDto };
+  @IsInt()
+  deckId: number;
+}

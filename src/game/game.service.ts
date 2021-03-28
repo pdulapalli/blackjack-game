@@ -1,22 +1,42 @@
-import { Game, Prisma } from '.prisma/client';
+import { Game } from '.prisma/client';
 import { Injectable } from '@nestjs/common';
+import { IdDto } from 'src/shared/dto/id.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { GameStartDto } from './dto/game.dto';
 
 @Injectable()
 export class GameService {
   constructor(private prisma: PrismaService) {}
 
-  async retrieveGame(
-    gameWhereUniqueInput: Prisma.GameWhereUniqueInput,
-  ): Promise<Game> {
+  async retrieveGame({ id }: IdDto): Promise<Game> {
     return this.prisma.game.findUnique({
-      where: gameWhereUniqueInput,
+      where: {
+        id: Number.parseInt(id, 10),
+      },
     });
   }
 
-  async createGame(data: Prisma.GameCreateInput): Promise<Game> {
+  async createGame(createInfo: GameStartDto): Promise<Game> {
     return this.prisma.game.create({
-      data,
+      data: {
+        currentTurn: 'PLAYER',
+        outcome: 'PENDING',
+        dealer: {
+          connect: {
+            id: createInfo.dealerId,
+          },
+        },
+        player: {
+          connect: {
+            id: createInfo.playerId,
+          },
+        },
+        deck: {
+          connect: {
+            id: createInfo.deckId,
+          },
+        },
+      },
     });
   }
 }

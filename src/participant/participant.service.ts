@@ -7,6 +7,10 @@ import { ParticipantCreateDto } from './dto/participant.dto';
 export class ParticipantService {
   constructor(private prisma: PrismaService) {}
 
+  async retrieveAllParticipants(): Promise<Participant[]> {
+    return this.prisma.participant.findMany();
+  }
+
   async retrieveParticipant(
     participantWhereUniqueInput: Prisma.ParticipantWhereUniqueInput,
   ): Promise<Participant> {
@@ -24,7 +28,7 @@ export class ParticipantService {
         role: createInfo.role,
         hand: {
           create: {
-            // id: null,
+            type: 'HAND',
           },
         },
       },
