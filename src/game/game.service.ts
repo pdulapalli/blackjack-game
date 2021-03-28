@@ -1,4 +1,4 @@
-import { Game, Prisma } from '.prisma/client';
+import { Game } from '.prisma/client';
 import { Injectable } from '@nestjs/common';
 import { IdDto } from 'src/shared/dto/id.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -20,7 +20,7 @@ export class GameService {
     return this.prisma.game.create({
       data: {
         currentTurn: 'PLAYER',
-        winner: 'PENDING',
+        outcome: 'PENDING',
         dealer: {
           connect: {
             id: createInfo.dealerId,
@@ -29,6 +29,11 @@ export class GameService {
         player: {
           connect: {
             id: createInfo.playerId,
+          },
+        },
+        deck: {
+          connect: {
+            id: createInfo.deckId,
           },
         },
       },

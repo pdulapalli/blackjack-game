@@ -20,6 +20,7 @@ model Card {
 model Collection {
   id          Int            @id @default(autoincrement())
   Participant Participant?
+  Game        Game?
   cards       Card[]
   type        CollectionType
 }
@@ -38,18 +39,20 @@ model Participant {
 
 // Monitor overall game state
 model Game {
-  id          Int         @id @default(autoincrement())
-  currentTurn Role        @default(PLAYER)
-  winner      WinState    @default(PENDING)
+  id          Int          @id @default(autoincrement())
+  currentTurn Role         @default(PLAYER)
+  outcome     OutcomeState @default(PENDING)
+  deckId      Int
+  deck        Collection   @relation(fields: [deckId], references: [id])
   playerId    Int
   dealerId    Int
-  player      Participant @relation(name: "PlayingRel", fields: [playerId], references: [id])
-  dealer      Participant @relation(name: "DealingRel", fields: [dealerId], references: [id])
+  player      Participant  @relation(name: "PlayingRel", fields: [playerId], references: [id])
+  dealer      Participant  @relation(name: "DealingRel", fields: [dealerId], references: [id])
 }
 
 // Some enumerations to make certain attribute values a little easier to reason
 // about.
-enum WinState {
+enum OutcomeState {
   PLAYER_WIN
   DEALER_WIN
   PENDING
