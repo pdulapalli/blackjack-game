@@ -1,6 +1,6 @@
 import { IsEnum, IsInt, Min, Max } from 'class-validator';
 
-enum CardType {
+export enum CardType {
   FACECARD = 'FACECARD',
   SPOT = 'SPOT',
   ACE = 'ACE',

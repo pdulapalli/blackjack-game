@@ -1,10 +1,10 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
-import { Collection as CollectionModel } from '@prisma/client';
-import { CollectionService } from './collection.service';
+import { Controller, Get, Param, Post } from '@nestjs/common';
 import {
-  CollectionIdDto,
-  CollectionInfoDto,
-} from '../shared/dto/collection.dto';
+  Collection as CollectionModel,
+  Card as CardModel,
+} from '@prisma/client';
+import { CollectionService } from './collection.service';
+import { CollectionIdDto } from '../shared/dto/collection.dto';
 
 @Controller('collection')
 export class CollectionController {
@@ -15,8 +15,15 @@ export class CollectionController {
     return this.collectionSvc.retrieveCollection(params);
   }
 
-  @Post()
-  createCollection(@Body() body: CollectionInfoDto): Promise<CollectionModel> {
-    return this.collectionSvc.createCollection(body);
+  @Get('contents/:collectionId')
+  listCardsForCollection(
+    @Param() params: CollectionIdDto,
+  ): Promise<CardModel[]> {
+    return this.collectionSvc.getCardsForCollection(params);
+  }
+
+  @Post('deck')
+  createDeck(): Promise<CollectionModel> {
+    return this.collectionSvc.createDeck();
   }
 }
