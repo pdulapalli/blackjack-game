@@ -126,13 +126,7 @@ export class CollectionService {
     });
   }
 
-  async calculateHandScore(handId: number): Promise<number> {
-    const cardsInHand = await this.prisma.card.findMany({
-      where: {
-        collectionId: handId,
-      },
-    });
-
+  async calculateHandScore(cardsInHand: Card[]): Promise<number> {
     const nonAceCards = cardsInHand.filter((c) => c.type !== 'ACE');
     const aces = cardsInHand.filter((c) => c.type === 'ACE');
 

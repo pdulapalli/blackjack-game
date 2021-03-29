@@ -66,10 +66,15 @@ export class GameService {
     await this.collectionService.drawCards(createInfo.deckId, player.handId, 2);
     await this.collectionService.drawCards(createInfo.deckId, dealer.handId, 2);
 
+    const [playerHandCards, dealerHandCards] = await Promise.all([
+      this.collectionService.getCardsForCollection({ collectionId: `${player.handId}` }),
+      this.collectionService.getCardsForCollection({ collectionId: `${dealer.handId}` })
+    ])
+
     // Determine and set initial scores
     const [playerScore, dealerScore] = await Promise.all([
-      this.collectionService.calculateHandScore(dealer.handId),
-      this.collectionService.calculateHandScore(player.handId),
+      this.collectionService.calculateHandScore(playerHandCards),
+      this.collectionService.calculateHandScore(dealerHandCards),
     ]);
 
     await Promise.all([

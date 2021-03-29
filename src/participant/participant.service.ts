@@ -60,12 +60,6 @@ export class ParticipantService {
       increment: amount,
     };
 
-    if (amount < 0) {
-      adjustData = {
-        decrement: amount,
-      };
-    }
-
     return this.prisma.participant.update({
       where: {
         id: participantId,
