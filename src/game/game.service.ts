@@ -1,10 +1,11 @@
-import { Game } from '.prisma/client';
+import { Game, Move } from '.prisma/client';
 import { Injectable } from '@nestjs/common';
 import { IdDto } from 'src/shared/dto/id.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { GameStartDto } from './dto/game.dto';
+import { GameIdDto, GameStartDto } from './dto/game.dto';
 import { CollectionService } from '../collection/collection.service';
 import { ParticipantService } from '../participant/participant.service';
+import { MoveDto } from './dto/move.dto';
 
 @Injectable()
 export class GameService {
@@ -82,6 +83,26 @@ export class GameService {
       this.participantService.updateScore(dealer.id, dealerScore),
     ]);
 
+    // TODO: if player has blackjack, just finish it right here
+
     return gameState;
+  }
+
+  async getMoves({ gameId }: GameIdDto): Promise<Move[]> {
+    return this.prisma.move.findMany({
+      where: {
+        gameId: Number.parseInt(gameId, 10),
+      },
+    });
+  }
+
+  async makeMove({ gameId, participantId, action }: MoveDto): Promise<Move> {
+    return this.prisma.move.create({
+      data: {
+        gameId,
+        participantId,
+        action,
+      },
+    });
   }
 }

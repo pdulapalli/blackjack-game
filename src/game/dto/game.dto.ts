@@ -1,4 +1,4 @@
-import { IsInt } from 'class-validator';
+import { IsInt, IsNumberString } from 'class-validator';
 
 export class GameStartDto {
   @IsInt()
@@ -12,4 +12,9 @@ export class GameStartDto {
 
   @IsInt()
   bet: number;
+}
+
+export class GameIdDto {
+  @IsNumberString()
+  gameId: string;
 }
