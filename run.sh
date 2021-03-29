@@ -27,9 +27,13 @@ function clean() {
   envName="$1"
   validateEnv "$envName"
 
-  ENV_NAME="$envName" docker-compose \
+  export ENV_NAME="$envName"
+
+  docker-compose \
     --env-file "./config/${envName}.env" \
-    --file docker-compose.yml down --volumes --rmi all
+    --file docker-compose.yml down --volumes
+
+  unset ENV_NAME
 }
 
 function logs() {
