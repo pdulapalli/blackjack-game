@@ -19,8 +19,8 @@ model Card {
 // Track cards in deck or participant hand as appropriate
 model Collection {
   id          Int            @id @default(autoincrement())
-  Participant Participant?
-  Game        Game?
+  participant Participant?
+  game        Game?
   cards       Card[]
   type        CollectionType
 }
@@ -34,6 +34,7 @@ model Participant {
   playingGame Game?      @relation("PlayingRel")
   dealingGame Game?      @relation("DealingRel")
   role        Role
+  score       Int        @default(0)
   money       Int        @default(0)
 }
 
