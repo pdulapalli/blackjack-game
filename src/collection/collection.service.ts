@@ -1,19 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { Card, Collection } from '@prisma/client';
 import { makeCombinations } from '../shared/helpers/combinations';
-import { getRandomInt } from '../shared/helpers/random';
 import { PrismaService } from '../prisma/prisma.service';
 import { CollectionIdDto, CollectionType } from '../shared/dto/collection.dto';
 import { CardDto, CardType } from './dto/card.dto';
+import Chance = require('chance');
 
 @Injectable()
 export class CollectionService {
   BLACKJACK_THRESHOLD: number;
   ACE_VALUES: number[];
+  chance: any;
 
   constructor(private prisma: PrismaService) {
     this.BLACKJACK_THRESHOLD = 21;
     this.ACE_VALUES = [1, 11];
+    this.chance = new Chance();
   }
 
   async retrieveCollection({
@@ -50,14 +52,15 @@ export class CollectionService {
     });
   }
 
-  async createCards(cards: CardDto[]): Promise<void> {
-    for (let i = 0; i < cards.length; i += 1) {
-      await this.prisma.card.create({
-        data: cards[i],
-      });
-    }
+  async createCards(cards: CardDto[]): Promise<number> {
+    const { count } = await this.prisma.card.createMany({
+      data: cards,
+    });
+
+    return count;
   }
 
+  // Enumerate what cards are needed to assemble a standard deck
   parametrizeCardsForDeck(deckId: number): CardDto[] {
     const cardsForDeck: CardDto[] = [];
 
@@ -85,49 +88,43 @@ export class CollectionService {
       }
     }
 
-    return cardsForDeck;
+    const shuffledCards = this.chance.shuffle(cardsForDeck);
+    return shuffledCards;
   }
 
+  // Assumes deck is already shuffled
   async drawCards(
     deckId: number,
     handId: number,
     quantity: number,
   ): Promise<Card[]> {
-    const cardsDrawn = [];
-
-    // Find out how many cards are left in the deck
-    let numCardsAvailable = await this.prisma.card.count({
+    const cardsToTake = await this.prisma.card.findMany({
       where: {
         collectionId: deckId,
       },
+      skip: 0,
+      take: quantity,
     });
 
-    for (let i = 0; i < quantity; i += 1) {
-      // Randomly pick a card
-      const randOffset = getRandomInt(0, numCardsAvailable);
-      const cardRes = await this.prisma.card.findMany({
-        where: {
-          collectionId: deckId,
-        },
-        skip: randOffset,
-        take: 1,
-      });
+    // Transfer cards from deck to hand
+    await this.prisma.card.updateMany({
+      data: {
+        collectionId: handId,
+      },
+      where: {
+        OR: cardsToTake.map((cr) => ({
+          id: cr.id,
+        })),
+      },
+    });
 
-      // Transfer card from deck to hand
-      await this.prisma.card.update({
-        data: {
-          collectionId: handId,
-        },
-        where: {
-          id: cardRes[0].id,
-        },
-      });
-
-      cardsDrawn.push(cardRes);
-      numCardsAvailable -= 1;
-    }
-
-    return cardsDrawn;
+    return this.prisma.card.findMany({
+      where: {
+        OR: cardsToTake.map((cr) => ({
+          id: cr.id,
+        })),
+      },
+    });
   }
 
   async calculateHandScore(handId: number): Promise<number> {
