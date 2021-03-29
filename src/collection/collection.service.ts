@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
+import Chance = require('chance');
 import { Card, Collection } from '@prisma/client';
 import { makeCombinations } from '../shared/helpers/combinations';
 import { PrismaService } from '../prisma/prisma.service';
 import { CollectionIdDto, CollectionType } from '../shared/dto/collection.dto';
 import { CardDto, CardType } from './dto/card.dto';
 import Constants from '../shared/constants';
-import Chance = require('chance');
 
 @Injectable()
 export class CollectionService {
