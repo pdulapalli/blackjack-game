@@ -31,6 +31,7 @@ export class GameService {
       data: {
         currentTurn: 'PLAYER',
         outcome: 'PENDING',
+        bet: createInfo.bet,
         dealer: {
           connect: {
             id: createInfo.dealerId,
@@ -62,20 +63,23 @@ export class GameService {
       }),
     ]);
 
+    // Place bet, and deduct amount from player
+    await this.participantService.adjustMoney(player.id, -1 * createInfo.bet);
+
+    // Deal cards
     await this.collectionService.drawCards(createInfo.deckId, player.handId, 2);
     await this.collectionService.drawCards(createInfo.deckId, dealer.handId, 2);
 
+    // Determine and set initial scores
     const [playerScore, dealerScore] = await Promise.all([
       this.collectionService.calculateHandScore(dealer.handId),
       this.collectionService.calculateHandScore(player.handId),
     ]);
 
-    await this.participantService.updateScores(
-      player.id,
-      dealer.id,
-      playerScore,
-      dealerScore,
-    );
+    await Promise.all([
+      this.participantService.updateScore(player.id, playerScore),
+      this.participantService.updateScore(dealer.id, dealerScore),
+    ]);
 
     return gameState;
   }

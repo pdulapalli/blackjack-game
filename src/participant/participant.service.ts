@@ -28,6 +28,7 @@ export class ParticipantService {
       data: {
         name: createInfo.name,
         role: createInfo.role,
+        money: createInfo.money,
         hand: {
           create: {
             type: 'HAND',
@@ -37,31 +38,41 @@ export class ParticipantService {
     });
   }
 
-  async updateScores(
-    playerId: number,
-    dealerId: number,
-    playerScore: number,
-    dealerScore: number,
-  ): Promise<Participant[]> {
-    const [playerUpdate, dealerUpdate] = await Promise.all([
-      this.prisma.participant.update({
-        where: {
-          id: playerId,
-        },
-        data: {
-          score: playerScore,
-        },
-      }),
-      this.prisma.participant.update({
-        where: {
-          id: dealerId,
-        },
-        data: {
-          score: dealerScore,
-        },
-      }),
-    ]);
+  async updateScore(
+    participantId: number,
+    scoreVal: number,
+  ): Promise<Participant> {
+    return this.prisma.participant.update({
+      where: {
+        id: participantId,
+      },
+      data: {
+        score: scoreVal,
+      },
+    });
+  }
 
-    return [playerUpdate, dealerUpdate];
+  async adjustMoney(
+    participantId: number,
+    amount: number,
+  ): Promise<Participant> {
+    let adjustData: any = {
+      increment: amount,
+    };
+
+    if (amount < 0) {
+      adjustData = {
+        decrement: amount,
+      };
+    }
+
+    return this.prisma.participant.update({
+      where: {
+        id: participantId,
+      },
+      data: {
+        money: adjustData,
+      },
+    });
   }
 }

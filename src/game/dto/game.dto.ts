@@ -9,4 +9,7 @@ export class GameStartDto {
 
   @IsInt()
   deckId: number;
+
+  @IsInt()
+  bet: number;
 }
