@@ -1,4 +1,4 @@
-import { IsEnum, IsString } from 'class-validator';
+import { IsEnum, IsNumber, IsNumberString, IsString } from 'class-validator';
 
 enum Role {
   PLAYER = 'PLAYER',
@@ -11,6 +11,14 @@ class ParticipantCreateDto {
 
   @IsEnum(Role)
   role: Role;
+
+  @IsNumber()
+  money: number;
 }
 
-export { ParticipantCreateDto, Role };
+class ParticipantIdDto {
+  @IsNumberString()
+  participantId: string;
+}
+
+export { ParticipantCreateDto, ParticipantIdDto, Role };

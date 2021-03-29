@@ -15,6 +15,6 @@ export class GameController {
 
   @Post()
   startGame(@Body() data: GameStartDto): Promise<GameModel> {
-    return this.gameSvc.createGame(data);
+    return this.gameSvc.startGame(data);
   }
 }

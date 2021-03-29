@@ -1,7 +1,6 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { Participant as ParticipantModel } from '@prisma/client';
-import { IdDto } from '../shared/dto/id.dto';
-import { ParticipantCreateDto } from './dto/participant.dto';
+import { ParticipantCreateDto, ParticipantIdDto } from './dto/participant.dto';
 import { ParticipantService } from './participant.service';
 
 @Controller('participant')
@@ -13,11 +12,9 @@ export class ParticipantController {
     return this.participantSvc.retrieveAllParticipants();
   }
 
-  @Get(':id')
-  getParticipant(@Param() params: IdDto): Promise<ParticipantModel> {
-    return this.participantSvc.retrieveParticipant({
-      id: Number.parseInt(params.id, 10),
-    });
+  @Get(':participantId')
+  getParticipant(@Param() params: ParticipantIdDto): Promise<ParticipantModel> {
+    return this.participantSvc.retrieveParticipant(params);
   }
 
   @Post()
