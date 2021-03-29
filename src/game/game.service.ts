@@ -1,13 +1,22 @@
-import { Card, Game } from '.prisma/client';
+import { Game } from '.prisma/client';
 import { Injectable } from '@nestjs/common';
 import { IdDto } from 'src/shared/dto/id.dto';
-import { getRandomInt } from '../shared/helpers/random';
 import { PrismaService } from '../prisma/prisma.service';
 import { GameStartDto } from './dto/game.dto';
+import { CollectionService } from '../collection/collection.service';
+import { ParticipantService } from '../participant/participant.service';
 
 @Injectable()
 export class GameService {
-  constructor(private prisma: PrismaService) {}
+  BLACKJACK_THRESHOLD: number;
+
+  constructor(
+    private prisma: PrismaService,
+    private collectionService: CollectionService,
+    private participantService: ParticipantService,
+  ) {
+    this.BLACKJACK_THRESHOLD = 21;
+  }
 
   async retrieveGame({ id }: IdDto): Promise<Game> {
     return this.prisma.game.findUnique({
@@ -17,8 +26,8 @@ export class GameService {
     });
   }
 
-  async startGame(createInfo: GameStartDto): Promise<Game> {
-    const gameState = await this.prisma.game.create({
+  async createGame(createInfo: GameStartDto): Promise<Game> {
+    return this.prisma.game.create({
       data: {
         currentTurn: 'PLAYER',
         outcome: 'PENDING',
@@ -39,60 +48,35 @@ export class GameService {
         },
       },
     });
-
-    const dealer = await this.prisma.participant.findUnique({
-      where: {
-        id: createInfo.dealerId,
-      },
-    });
-
-    const player = await this.prisma.participant.findUnique({
-      where: {
-        id: createInfo.playerId,
-      },
-    });
-
-    await this.drawCards(createInfo.deckId, dealer.handId, player.handId);
-
-    return gameState;
   }
 
-  async drawCards(
-    deckId: number,
-    handId: number,
-    quantity: number,
-  ): Promise<Card[]> {
-    const cardsDrawn = [];
+  async startGame(createInfo: GameStartDto): Promise<Game> {
+    const gameState = await this.createGame(createInfo);
 
-    let numCardsAvailable = await this.prisma.card.count({
-      where: {
-        collectionId: deckId,
-      },
-    });
+    const [player, dealer] = await Promise.all([
+      this.participantService.retrieveParticipant({
+        participantId: `${createInfo.playerId}`,
+      }),
+      this.participantService.retrieveParticipant({
+        participantId: `${createInfo.dealerId}`,
+      }),
+    ]);
 
-    for (let i = 0; i < quantity; i += 1) {
-      const randOffset = getRandomInt(0, numCardsAvailable);
-      const cardRes = await this.prisma.card.findMany({
-        where: {
-          collectionId: deckId,
-        },
-        skip: randOffset,
-        take: 1,
-      });
+    await this.collectionService.drawCards(createInfo.deckId, player.handId, 2);
+    await this.collectionService.drawCards(createInfo.deckId, dealer.handId, 2);
 
-      await this.prisma.card.update({
-        data: {
-          collectionId: handId,
-        },
-        where: {
-          id: cardRes[0].id,
-        },
-      });
+    const [playerScore, dealerScore] = await Promise.all([
+      this.collectionService.calculateHandScore(dealer.handId),
+      this.collectionService.calculateHandScore(player.handId),
+    ]);
 
-      cardsDrawn.push(cardRes);
-      numCardsAvailable -= 1;
-    }
+    await this.participantService.updateScores(
+      player.id,
+      dealer.id,
+      playerScore,
+      dealerScore,
+    );
 
-    return cardsDrawn;
+    return gameState;
   }
 }

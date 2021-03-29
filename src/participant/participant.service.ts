@@ -1,7 +1,7 @@
-import { Participant, Prisma } from '.prisma/client';
+import { Participant } from '.prisma/client';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { ParticipantCreateDto } from './dto/participant.dto';
+import { ParticipantCreateDto, ParticipantIdDto } from './dto/participant.dto';
 
 @Injectable()
 export class ParticipantService {
@@ -11,11 +11,13 @@ export class ParticipantService {
     return this.prisma.participant.findMany();
   }
 
-  async retrieveParticipant(
-    participantWhereUniqueInput: Prisma.ParticipantWhereUniqueInput,
-  ): Promise<Participant> {
+  async retrieveParticipant({
+    participantId,
+  }: ParticipantIdDto): Promise<Participant> {
     return this.prisma.participant.findUnique({
-      where: participantWhereUniqueInput,
+      where: {
+        id: Number.parseInt(participantId, 10),
+      },
     });
   }
 
@@ -33,5 +35,33 @@ export class ParticipantService {
         },
       },
     });
+  }
+
+  async updateScores(
+    playerId: number,
+    dealerId: number,
+    playerScore: number,
+    dealerScore: number,
+  ): Promise<Participant[]> {
+    const [playerUpdate, dealerUpdate] = await Promise.all([
+      this.prisma.participant.update({
+        where: {
+          id: playerId,
+        },
+        data: {
+          score: playerScore,
+        },
+      }),
+      this.prisma.participant.update({
+        where: {
+          id: dealerId,
+        },
+        data: {
+          score: dealerScore,
+        },
+      }),
+    ]);
+
+    return [playerUpdate, dealerUpdate];
   }
 }
