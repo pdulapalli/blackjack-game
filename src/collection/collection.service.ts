@@ -4,16 +4,15 @@ import { makeCombinations } from '../shared/helpers/combinations';
 import { PrismaService } from '../prisma/prisma.service';
 import { CollectionIdDto, CollectionType } from '../shared/dto/collection.dto';
 import { CardDto, CardType } from './dto/card.dto';
+import Constants from '../shared/constants';
 import Chance = require('chance');
 
 @Injectable()
 export class CollectionService {
-  BLACKJACK_THRESHOLD: number;
   ACE_VALUES: number[];
   chance: any;
 
   constructor(private prisma: PrismaService) {
-    this.BLACKJACK_THRESHOLD = 21;
     this.ACE_VALUES = [1, 11];
     this.chance = new Chance();
   }
@@ -160,12 +159,12 @@ export class CollectionService {
       return nonAceScore;
     }
 
-    const distanceToBlackjack = this.BLACKJACK_THRESHOLD - nonAceScore;
+    const distanceToBlackjack = Constants.BLACKJACK_THRESHOLD - nonAceScore;
 
     // Can end up with Blackjack if have exactly number of aces to make up the
     // difference at min value.
     if (distanceToBlackjack === numAces) {
-      return this.BLACKJACK_THRESHOLD;
+      return Constants.BLACKJACK_THRESHOLD;
     }
 
     // If there are more aces to account for compared to the remaining space

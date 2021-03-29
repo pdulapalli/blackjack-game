@@ -8,15 +8,11 @@ import { ParticipantService } from '../participant/participant.service';
 
 @Injectable()
 export class GameService {
-  BLACKJACK_THRESHOLD: number;
-
   constructor(
     private prisma: PrismaService,
     private collectionService: CollectionService,
     private participantService: ParticipantService,
-  ) {
-    this.BLACKJACK_THRESHOLD = 21;
-  }
+  ) {}
 
   async retrieveGame({ id }: IdDto): Promise<Game> {
     return this.prisma.game.findUnique({
