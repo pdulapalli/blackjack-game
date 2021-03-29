@@ -1,11 +1,17 @@
 import { Game, Move } from '.prisma/client';
 import { Injectable } from '@nestjs/common';
-import { IdDto } from 'src/shared/dto/id.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { GameIdDto, GameStartDto } from './dto/game.dto';
 import { CollectionService } from '../collection/collection.service';
 import { ParticipantService } from '../participant/participant.service';
+import {
+  GameIdDto,
+  GameStartDto,
+  GameWinDto,
+  OutcomeState,
+} from './dto/game.dto';
 import { MoveDto } from './dto/move.dto';
+import Constants from '../shared/constants';
+import { IdDto } from '../shared/dto/id.dto';
 
 @Injectable()
 export class GameService {
@@ -49,7 +55,7 @@ export class GameService {
   }
 
   async startGame(createInfo: GameStartDto): Promise<Game> {
-    const gameState = await this.createGame(createInfo);
+    let gameState = await this.createGame(createInfo);
 
     const [player, dealer] = await Promise.all([
       this.participantService.retrieveParticipant({
@@ -68,9 +74,13 @@ export class GameService {
     await this.collectionService.drawCards(createInfo.deckId, dealer.handId, 2);
 
     const [playerHandCards, dealerHandCards] = await Promise.all([
-      this.collectionService.getCardsForCollection({ collectionId: `${player.handId}` }),
-      this.collectionService.getCardsForCollection({ collectionId: `${dealer.handId}` })
-    ])
+      this.collectionService.getCardsForCollection({
+        collectionId: `${player.handId}`,
+      }),
+      this.collectionService.getCardsForCollection({
+        collectionId: `${dealer.handId}`,
+      }),
+    ]);
 
     // Determine and set initial scores
     const [playerScore, dealerScore] = await Promise.all([
@@ -83,9 +93,25 @@ export class GameService {
       this.participantService.updateScore(dealer.id, dealerScore),
     ]);
 
-    // TODO: if player has blackjack, just finish it right here
+    if (playerScore === Constants.BLACKJACK_THRESHOLD) {
+      gameState = await this.setGameWinner({
+        gameId: gameState.id,
+        outcome: OutcomeState.PLAYER_WIN,
+      });
+    }
 
     return gameState;
+  }
+
+  async setGameWinner({ gameId, outcome }: GameWinDto): Promise<Game> {
+    return this.prisma.game.update({
+      where: {
+        id: gameId,
+      },
+      data: {
+        outcome,
+      },
+    });
   }
 
   async getMoves({ gameId }: GameIdDto): Promise<Move[]> {
