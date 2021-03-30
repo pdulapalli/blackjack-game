@@ -14,13 +14,13 @@ export class GameController {
     return this.gameSvc.retrieveGame(params);
   }
 
-  @Get('moves/:gameId')
+  @Get(':gameId/moves')
   getMovesForGame(@Param() params: GameIdDto): Promise<MoveModel[]> {
     return this.gameSvc.getMoves(params);
   }
 
   @Post('move')
-  makeMove(@Body() data: MoveDto): Promise<MoveModel> {
+  makeMove(@Body() data: MoveDto): Promise<GameModel> {
     return this.gameSvc.makeMove(data);
   }
 

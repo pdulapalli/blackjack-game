@@ -32,3 +32,15 @@ export class GameWinDto {
   @IsEnum(OutcomeState)
   outcome: OutcomeState;
 }
+
+export enum Turn {
+  PLAYER = 'PLAYER',
+  DEALER = 'DEALER',
+}
+export class GameCurrentTurnDto {
+  @IsNumberString()
+  gameId: number;
+
+  @IsEnum(Turn)
+  currentTurn: Turn;
+}
