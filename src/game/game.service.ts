@@ -32,8 +32,24 @@ export class GameService {
     });
   }
 
-  async deleteGame({ id }: IdDto): Promise<Game> {
-    return this.prisma.game.delete({
+  async deleteGame({ id }: IdDto): Promise<void> {
+    const game = await this.retrieveGame({ id });
+    if (!game) {
+      return;
+    }
+
+    const [player, dealer] = await Promise.all([
+      this.participantService.retrieveParticipant({
+        participantId: `${game.playerId}`,
+      }),
+      this.participantService.retrieveParticipant({
+        participantId: `${game.dealerId}`,
+      }),
+    ]);
+
+    await this.cleanupGame(player, dealer, game);
+
+    await this.prisma.game.delete({
       where: {
         id: Number.parseInt(id, 10),
       },
@@ -355,6 +371,22 @@ export class GameService {
     return gameState;
   }
 
+  async cleanupGame(
+    player: Participant,
+    dealer: Participant,
+    game: Game,
+  ): Promise<void> {
+    // Return hands to deck
+    await this.collectionService.transferHandToDeck(player.handId, game.deckId);
+    await this.collectionService.transferHandToDeck(dealer.handId, game.deckId);
+
+    // Reset scores
+    await Promise.all([
+      await this.participantService.updateScore(game.playerId, 0),
+      await this.participantService.updateScore(game.dealerId, 0),
+    ]);
+  }
+
   async handleGameResult(gameId: number): Promise<void> {
     const game = await this.retrieveGame({
       id: `${gameId}`,
@@ -373,8 +405,7 @@ export class GameService {
       }),
     ]);
 
-    await this.collectionService.transferHandToDeck(player.handId, game.deckId);
-    await this.collectionService.transferHandToDeck(dealer.handId, game.deckId);
+    await this.cleanupGame(player, dealer, game);
 
     switch (game.outcome) {
       case OutcomeState.PLAYER_WIN:
