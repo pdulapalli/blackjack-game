@@ -43,7 +43,7 @@ function logs() {
 
   ENV_NAME="$envName" docker-compose \
     --env-file "./config/${envName}.env" \
-    --file docker-compose.yml logs --follow
+    --file docker-compose.yml logs --follow "${@:2}"
 }
 
 function validateEnv() {
@@ -60,6 +60,6 @@ case "$1" in
   start) start "$2" ;;
   stop) stop "$2" ;;
   clean) clean "$2" ;;
-  logs) logs "$2" ;;
+  logs) logs "$2" "${@:3}" ;;
   *) echo "Unknown directive: $1. Use 'start', 'stop', or 'clean'" ;;
 esac
