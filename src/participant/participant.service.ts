@@ -56,16 +56,14 @@ export class ParticipantService {
     participantId: number,
     amount: number,
   ): Promise<Participant> {
-    let adjustData: any = {
-      increment: amount,
-    };
-
     return this.prisma.participant.update({
       where: {
         id: participantId,
       },
       data: {
-        money: adjustData,
+        money: {
+          increment: amount,
+        },
       },
     });
   }
