@@ -32,6 +32,14 @@ export class GameService {
     });
   }
 
+  async deleteGame({ id }: IdDto): Promise<Game> {
+    return this.prisma.game.delete({
+      where: {
+        id: Number.parseInt(id, 10),
+      },
+    });
+  }
+
   async createGame(createInfo: GameStartDto): Promise<Game> {
     return this.prisma.game.create({
       data: {

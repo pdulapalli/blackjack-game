@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
 import { Game as GameModel, Move as MoveModel } from '@prisma/client';
 import { GameService } from './game.service';
 import { IdDto } from '../shared/dto/id.dto';
@@ -22,6 +22,11 @@ export class GameController {
   @Post('move')
   makeMove(@Body() data: MoveDto): Promise<GameModel> {
     return this.gameSvc.makeMove(data);
+  }
+
+  @Delete(':id')
+  deleteGame(@Param() params: IdDto): Promise<GameModel> {
+    return this.gameSvc.deleteGame(params);
   }
 
   @Post()
