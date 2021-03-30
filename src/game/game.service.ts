@@ -118,10 +118,13 @@ export class GameService {
     ]);
 
     // Determine and set initial scores
-    const [playerScore, dealerScore] = await Promise.all([
-      this.collectionService.calculateHandScore(playerHandCards),
-      this.collectionService.calculateHandScore(dealerHandCards),
-    ]);
+    const playerScore = this.collectionService.calculateHandScore(
+      playerHandCards,
+    );
+
+    const dealerScore = this.collectionService.calculateHandScore(
+      dealerHandCards,
+    );
 
     await Promise.all([
       this.participantService.updateScore(player.id, playerScore),
@@ -194,7 +197,7 @@ export class GameService {
       collectionId: `${participant.handId}`,
     });
 
-    const score = await this.collectionService.calculateHandScore(handContents);
+    const score = this.collectionService.calculateHandScore(handContents);
     await this.participantService.updateScore(participant.id, score);
 
     return score;

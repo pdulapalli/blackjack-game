@@ -154,7 +154,7 @@ export class CollectionService {
     });
   }
 
-  async calculateHandScore(cardsInHand: Card[]): Promise<number> {
+  calculateHandScore(cardsInHand: Card[]): number {
     const nonAceCards = cardsInHand.filter((c) => c.type !== 'ACE');
     const aces = cardsInHand.filter((c) => c.type === 'ACE');
 
