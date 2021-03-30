@@ -184,18 +184,54 @@ export class GameService {
     return score;
   }
 
-  calculateGameOutcome(participant: Participant, score: number): OutcomeState {
-    if (score !== Constants.BLACKJACK_THRESHOLD) {
-      return OutcomeState.PENDING;
-    }
+  async calculateGameOutcome(
+    currentParticipantId: number,
+    currentGameId: number,
+  ): Promise<OutcomeState> {
+    const currentParticipant = await this.participantService.retrieveParticipant(
+      {
+        participantId: `${currentParticipantId}`,
+      },
+    );
+
+    const currentGame = await this.retrieveGame({
+      id: `${currentGameId}`,
+    });
 
     let outcome: OutcomeState;
-    switch (participant.role) {
+
+    switch (currentParticipant.role) {
       case Role.PLAYER:
-        outcome = OutcomeState.PLAYER_WIN;
+        {
+          if (currentParticipant.score === Constants.BLACKJACK_THRESHOLD) {
+            outcome = OutcomeState.PLAYER_WIN;
+          } else if (currentParticipant.score > Constants.BLACKJACK_THRESHOLD) {
+            // Player bust
+            outcome = OutcomeState.DEALER_WIN;
+          } else {
+            outcome = OutcomeState.PENDING;
+          }
+        }
         break;
       case Role.DEALER:
-        outcome = OutcomeState.DEALER_WIN;
+        {
+          const {
+            score: playerScore,
+          } = await this.participantService.retrieveParticipant({
+            participantId: `${currentGame.playerId}`,
+          });
+
+          if (currentParticipant.score === Constants.BLACKJACK_THRESHOLD) {
+            outcome = OutcomeState.DEALER_WIN;
+          } else if (currentParticipant.score > Constants.BLACKJACK_THRESHOLD) {
+            // Dealer bust
+            outcome = OutcomeState.PLAYER_WIN;
+          } else if (currentParticipant.score > playerScore) {
+            outcome = OutcomeState.DEALER_WIN;
+          } else {
+            outcome = OutcomeState.PLAYER_WIN;
+          }
+        }
         break;
       default:
         break;
@@ -204,15 +240,19 @@ export class GameService {
     return outcome;
   }
 
-  async processHit(game: Game, participant: Participant): Promise<Game> {
+  async processHit(gameId: number, participant: Participant): Promise<Game> {
+    const game = await this.retrieveGame({
+      id: `${gameId}`,
+    });
+
     await this.collectionService.drawCards(
       game.deckId,
       participant.handId,
       Constants.HIT_CARD_DRAW_QTY,
     );
 
-    const score = await this.calculateAndUpdateScore(participant);
-    const outcome = this.calculateGameOutcome(participant, score);
+    await this.calculateAndUpdateScore(participant);
+    const outcome = await this.calculateGameOutcome(participant.id, gameId);
 
     return this.setGameOutcome({
       gameId: game.id,
@@ -220,24 +260,28 @@ export class GameService {
     });
   }
 
-  async processStay(game: Game, participant: Participant): Promise<Game> {
+  async processStay(gameId: number, participant: Participant): Promise<Game> {
     let gameState: Game;
 
-    const score = await this.calculateAndUpdateScore(participant);
+    await this.calculateAndUpdateScore(participant);
 
     switch (participant.role) {
       case Role.DEALER:
         {
-          const outcome = this.calculateGameOutcome(participant, score);
+          const outcome = await this.calculateGameOutcome(
+            participant.id,
+            gameId,
+          );
+
           gameState = await this.setGameOutcome({
-            gameId: game.id,
+            gameId: gameId,
             outcome,
           });
         }
         break;
       case Role.PLAYER:
         gameState = await this.setGameTurn({
-          gameId: game.id,
+          gameId: gameId,
           currentTurn: Turn.DEALER,
         });
         break;
@@ -249,21 +293,26 @@ export class GameService {
   }
 
   checkActionValid(
+    currentTurn: Role,
     participantRole: Role,
     action: ActionType,
     currentScore: number,
   ): boolean {
-    const aboveStayThreshold = currentScore >= Constants.DEALER_STAY_THRESHOLD;
-
-    if (participantRole == Role.PLAYER) {
-      return true;
-    }
-
-    if (aboveStayThreshold && action === ActionType.STAY) {
+    if (currentTurn !== participantRole) {
       return false;
     }
 
-    if (!aboveStayThreshold && action === ActionType.HIT) {
+    if (participantRole === Role.PLAYER) {
+      return true;
+    }
+
+    const aboveStayThreshold = currentScore >= Constants.DEALER_STAY_THRESHOLD;
+
+    if (aboveStayThreshold && action === ActionType.HIT) {
+      return false;
+    }
+
+    if (!aboveStayThreshold && action === ActionType.STAY) {
       return false;
     }
 
@@ -277,15 +326,14 @@ export class GameService {
     });
 
     const isValidMove = this.checkActionValid(
+      game.currentTurn,
       participant.role,
       moveInfo.action,
       participant.score,
     );
 
     if (!isValidMove) {
-      throw new Error(
-        'Invalid action. Participant must choose a different move.',
-      );
+      throw new Error('Attempted to perform invalid move.');
     }
 
     const move = await this.createMove(moveInfo);
@@ -293,15 +341,50 @@ export class GameService {
     let gameState: Game;
     switch (move.action) {
       case ActionType.HIT:
-        gameState = await this.processHit(game, participant);
+        gameState = await this.processHit(game.id, participant);
         break;
       case ActionType.STAY:
-        gameState = await this.processStay(game, participant);
+        gameState = await this.processStay(game.id, participant);
         break;
       default:
         break;
     }
 
+    await this.handleGameResult(game.id);
+
     return gameState;
+  }
+
+  async handleGameResult(gameId: number): Promise<void> {
+    const game = await this.retrieveGame({
+      id: `${gameId}`,
+    });
+
+    if (game.outcome === OutcomeState.PENDING) {
+      return;
+    }
+
+    const [player, dealer] = await Promise.all([
+      this.participantService.retrieveParticipant({
+        participantId: `${game.playerId}`,
+      }),
+      this.participantService.retrieveParticipant({
+        participantId: `${game.dealerId}`,
+      }),
+    ]);
+
+    await this.collectionService.transferHandToDeck(player.handId, game.deckId);
+    await this.collectionService.transferHandToDeck(dealer.handId, game.deckId);
+
+    switch (game.outcome) {
+      case OutcomeState.PLAYER_WIN:
+        await this.participantService.adjustMoney(game.playerId, game.bet);
+        break;
+      case OutcomeState.DEALER_WIN:
+        await this.participantService.adjustMoney(game.dealerId, game.bet);
+        break;
+      default:
+        break;
+    }
   }
 }

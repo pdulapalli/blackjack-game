@@ -126,6 +126,34 @@ export class CollectionService {
     });
   }
 
+  async transferHandToDeck(handId: number, deckId: number): Promise<Card[]> {
+    const cardsToReturn = await this.prisma.card.findMany({
+      where: {
+        collectionId: handId,
+      },
+      skip: 0,
+    });
+
+    await this.prisma.card.updateMany({
+      data: {
+        collectionId: deckId,
+      },
+      where: {
+        OR: cardsToReturn.map((cr) => ({
+          id: cr.id,
+        })),
+      },
+    });
+
+    return this.prisma.card.findMany({
+      where: {
+        OR: cardsToReturn.map((cr) => ({
+          id: cr.id,
+        })),
+      },
+    });
+  }
+
   async calculateHandScore(cardsInHand: Card[]): Promise<number> {
     const nonAceCards = cardsInHand.filter((c) => c.type !== 'ACE');
     const aces = cardsInHand.filter((c) => c.type === 'ACE');
