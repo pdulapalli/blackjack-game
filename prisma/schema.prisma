@@ -4,7 +4,7 @@ datasource db {
 }
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["createMany"]
 }
 
@@ -37,6 +37,17 @@ model Participant {
   role        Role
   score       Int        @default(0)
   money       Int        @default(0)
+  moves       Move[]
+}
+
+// Log game moves performed
+model Move {
+  id            Int         @id @default(autoincrement())
+  action        ActionType
+  participantId Int
+  gameId        Int
+  participant   Participant @relation(fields: [participantId], references: [id])
+  game          Game        @relation(fields: [gameId], references: [id])
 }
 
 // Monitor overall game state
@@ -51,6 +62,7 @@ model Game {
   dealerId    Int
   player      Participant  @relation(name: "PlayingRel", fields: [playerId], references: [id])
   dealer      Participant  @relation(name: "DealingRel", fields: [dealerId], references: [id])
+  moves       Move[]
 }
 
 // Some enumerations to make certain attribute values a little easier to reason
@@ -75,4 +87,9 @@ enum CardType {
 enum CollectionType {
   DECK
   HAND
+}
+
+enum ActionType {
+  HIT
+  STAY
 }

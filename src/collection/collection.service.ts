@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
+import Chance = require('chance');
 import { Card, Collection } from '@prisma/client';
 import { makeCombinations } from '../shared/helpers/combinations';
 import { PrismaService } from '../prisma/prisma.service';
 import { CollectionIdDto, CollectionType } from '../shared/dto/collection.dto';
 import { CardDto, CardType } from './dto/card.dto';
 import Constants from '../shared/constants';
-import Chance = require('chance');
 
 @Injectable()
 export class CollectionService {
@@ -126,7 +126,35 @@ export class CollectionService {
     });
   }
 
-  async calculateHandScore(cardsInHand: Card[]): Promise<number> {
+  async transferHandToDeck(handId: number, deckId: number): Promise<Card[]> {
+    const cardsToReturn = await this.prisma.card.findMany({
+      where: {
+        collectionId: handId,
+      },
+      skip: 0,
+    });
+
+    await this.prisma.card.updateMany({
+      data: {
+        collectionId: deckId,
+      },
+      where: {
+        OR: cardsToReturn.map((cr) => ({
+          id: cr.id,
+        })),
+      },
+    });
+
+    return this.prisma.card.findMany({
+      where: {
+        OR: cardsToReturn.map((cr) => ({
+          id: cr.id,
+        })),
+      },
+    });
+  }
+
+  calculateHandScore(cardsInHand: Card[]): number {
     const nonAceCards = cardsInHand.filter((c) => c.type !== 'ACE');
     const aces = cardsInHand.filter((c) => c.type === 'ACE');
 
