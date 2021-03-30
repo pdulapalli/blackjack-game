@@ -407,12 +407,13 @@ export class GameService {
 
     await this.cleanupGame(player, dealer, game);
 
+    const winnings = Constants.WINNINGS_MULTIPLER * game.bet;
     switch (game.outcome) {
       case OutcomeState.PLAYER_WIN:
-        await this.participantService.adjustMoney(game.playerId, game.bet);
+        await this.participantService.adjustMoney(game.playerId, winnings);
         break;
       case OutcomeState.DEALER_WIN:
-        await this.participantService.adjustMoney(game.dealerId, game.bet);
+        await this.participantService.adjustMoney(game.dealerId, winnings);
         break;
       default:
         break;
