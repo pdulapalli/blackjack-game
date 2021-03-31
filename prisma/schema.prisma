@@ -35,7 +35,6 @@ model Participant {
   playingGame Game?      @relation("PlayingRel")
   dealingGame Game?      @relation("DealingRel")
   role        Role
-  score       Int        @default(0)
   money       Int        @default(0)
   moves       Move[]
 }
@@ -56,6 +55,8 @@ model Game {
   currentTurn Role         @default(PLAYER)
   outcome     OutcomeState @default(PENDING)
   bet         Int          @default(0)
+  playerScore Int          @default(0)
+  dealerScore Int          @default(0)
   deckId      Int
   deck        Collection   @relation(fields: [deckId], references: [id])
   playerId    Int

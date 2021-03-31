@@ -60,7 +60,7 @@ is possible
 
 7. Continue issuing player actions as above until the game concludes. The final
 outcome should be retrievable for the game at `GET /game/:gameId` once complete.
-The dealer score, the player score, and player money can be viewed at
+The player money can be viewed at
 `GET /participant/:participantId`.
 
 ## API

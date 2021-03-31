@@ -9,6 +9,8 @@ export const fakeGame_1: Game = {
   deckId: 1,
   playerId: 1,
   dealerId: 2,
+  playerScore: 0,
+  dealerScore: 0,
 };
 
 export const fakeGame_3: any = {

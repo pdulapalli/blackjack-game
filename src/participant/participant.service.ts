@@ -38,33 +38,6 @@ export class ParticipantService {
     });
   }
 
-  async updateScore(
-    participantId: number,
-    scoreVal: number,
-  ): Promise<Participant> {
-    return this.prisma.participant.update({
-      where: {
-        id: participantId,
-      },
-      data: {
-        score: scoreVal,
-      },
-    });
-  }
-
-  async retrieveScore(participantId: number): Promise<number> {
-    const { score } = await this.prisma.participant.findUnique({
-      where: {
-        id: participantId,
-      },
-      select: {
-        score: true,
-      },
-    });
-
-    return score;
-  }
-
   async adjustMoney(
     participantId: number,
     amount: number,
