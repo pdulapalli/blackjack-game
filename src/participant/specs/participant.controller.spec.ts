@@ -61,7 +61,6 @@ describe('ParticipantController', () => {
 
       expect(result).toMatchObject(createOpts);
       expect(result).toHaveProperty('id');
-      expect(result).toHaveProperty('score');
       expect(result).toHaveProperty('handId');
     });
   });

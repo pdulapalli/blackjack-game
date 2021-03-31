@@ -85,6 +85,34 @@ export class GameService {
     });
   }
 
+  async updateScore(
+    participantId: number,
+    scoreVal: number,
+    game: Game,
+  ): Promise<Game> {
+    let fieldToUpdate: string;
+    switch (participantId) {
+      case game.dealerId:
+        fieldToUpdate = 'dealerScore';
+        break;
+      case game.playerId:
+        fieldToUpdate = 'playerScore';
+        break;
+      default:
+        return game;
+    }
+
+    const updateData = {};
+    updateData[fieldToUpdate] = scoreVal;
+
+    return this.prisma.game.update({
+      where: {
+        id: game.id,
+      },
+      data: updateData,
+    });
+  }
+
   async startGame(createInfo: GameStartDto): Promise<Game> {
     const [player, dealer] = await Promise.all([
       this.participantService.retrieveParticipant({
@@ -139,14 +167,18 @@ export class GameService {
     );
 
     await Promise.all([
-      this.participantService.updateScore(player.id, playerScore),
-      this.participantService.updateScore(dealer.id, dealerScore),
+      this.updateScore(player.id, playerScore, gameState),
+      this.updateScore(dealer.id, dealerScore, gameState),
     ]);
 
     if (playerScore === Constants.BLACKJACK_THRESHOLD) {
       gameState = await this.setGameOutcome({
         gameId: gameState.id,
         outcome: OutcomeState.PLAYER_WIN,
+      });
+    } else {
+      gameState = await this.retrieveGame({
+        id: `${gameState.id}`,
       });
     }
 
@@ -204,13 +236,16 @@ export class GameService {
     });
   }
 
-  async calculateAndUpdateScore(participant: Participant): Promise<number> {
+  async calculateAndUpdateScore(
+    participant: Participant,
+    game: Game,
+  ): Promise<number> {
     const handContents = await this.collectionService.getCardsForCollection({
       collectionId: `${participant.handId}`,
     });
 
     const score = this.collectionService.calculateHandScore(handContents);
-    await this.participantService.updateScore(participant.id, score);
+    await this.updateScore(participant.id, score, game);
 
     return score;
   }
@@ -234,9 +269,9 @@ export class GameService {
     switch (currentParticipant.role) {
       case Role.PLAYER:
         {
-          if (currentParticipant.score === Constants.BLACKJACK_THRESHOLD) {
+          if (currentGame.playerScore === Constants.BLACKJACK_THRESHOLD) {
             outcome = OutcomeState.PLAYER_WIN;
-          } else if (currentParticipant.score > Constants.BLACKJACK_THRESHOLD) {
+          } else if (currentGame.playerScore > Constants.BLACKJACK_THRESHOLD) {
             // Player bust
             outcome = OutcomeState.DEALER_WIN;
           } else {
@@ -246,20 +281,14 @@ export class GameService {
         break;
       case Role.DEALER:
         {
-          const {
-            score: playerScore,
-          } = await this.participantService.retrieveParticipant({
-            participantId: `${currentGame.playerId}`,
-          });
-
-          if (currentParticipant.score === Constants.BLACKJACK_THRESHOLD) {
+          if (currentGame.dealerScore === Constants.BLACKJACK_THRESHOLD) {
             outcome = OutcomeState.DEALER_WIN;
-          } else if (currentParticipant.score > Constants.BLACKJACK_THRESHOLD) {
+          } else if (currentGame.dealerScore > Constants.BLACKJACK_THRESHOLD) {
             // Dealer bust
             outcome = OutcomeState.PLAYER_WIN;
-          } else if (currentParticipant.score > playerScore) {
+          } else if (currentGame.dealerScore > currentGame.playerScore) {
             outcome = OutcomeState.DEALER_WIN;
-          } else if (currentParticipant.score === playerScore) {
+          } else if (currentGame.dealerScore === currentGame.playerScore) {
             outcome = OutcomeState.TIE;
           } else {
             outcome = OutcomeState.PLAYER_WIN;
@@ -284,7 +313,7 @@ export class GameService {
       Constants.HIT_CARD_DRAW_QTY,
     );
 
-    await this.calculateAndUpdateScore(participant);
+    await this.calculateAndUpdateScore(participant, game);
     const outcome = await this.calculateGameOutcome(participant.id, gameId);
 
     return this.setGameOutcome({
@@ -296,7 +325,8 @@ export class GameService {
   async processStay(gameId: number, participant: Participant): Promise<Game> {
     let gameState: Game;
 
-    await this.calculateAndUpdateScore(participant);
+    const currentGame = await this.retrieveGame({ id: `${gameId}` });
+    await this.calculateAndUpdateScore(participant, currentGame);
 
     switch (participant.role) {
       case Role.DEALER:
@@ -362,11 +392,23 @@ export class GameService {
       throw new Error('Cannot move on concluded game');
     }
 
+    let participantScore = 0;
+    switch (participant.role) {
+      case Role.DEALER:
+        participantScore = game.dealerScore;
+        break;
+      case Role.PLAYER:
+        participantScore = game.playerScore;
+        break;
+      default:
+        break;
+    }
+
     const isValidMove = this.checkActionValid(
       game.currentTurn,
       participant.role,
       moveInfo.action,
-      participant.score,
+      participantScore,
     );
 
     if (!isValidMove) {
@@ -387,10 +429,7 @@ export class GameService {
         break;
     }
 
-    const [playerScore, dealerScore] = await Promise.all([
-      this.participantService.retrieveScore(game.playerId),
-      this.participantService.retrieveScore(game.dealerId),
-    ]);
+    const { playerScore, dealerScore } = gameState;
 
     this.logger.log(
       `Participant ${participant.id} performed action ${move.action}. Player Score: ${playerScore}. Dealer Score: ${dealerScore}`,
@@ -412,8 +451,8 @@ export class GameService {
 
     // Reset scores
     await Promise.all([
-      await this.participantService.updateScore(game.playerId, 0),
-      await this.participantService.updateScore(game.dealerId, 0),
+      await this.updateScore(game.playerId, 0, game),
+      await this.updateScore(game.dealerId, 0, game),
     ]);
   }
 

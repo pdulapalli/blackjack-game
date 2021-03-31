@@ -6,7 +6,6 @@ const fakeParticipant_1: Participant = {
   name: 'Aardvark',
   handId: 1,
   role: Role.PLAYER,
-  score: 0,
   money: 0,
 };
 
@@ -15,14 +14,12 @@ const fakeParticipant_2: Participant = {
   name: 'Beetle',
   handId: 2,
   role: Role.DEALER,
-  score: 0,
   money: 100,
 };
 
 const fakeParticipant_3: any = {
   id: 3,
   handId: 3,
-  score: 0,
 };
 
 export const availableParticipants = {
