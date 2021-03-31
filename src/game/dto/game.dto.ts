@@ -1,4 +1,4 @@
-import { IsEnum, IsInt, IsNumberString } from 'class-validator';
+import { IsEnum, IsPositive, IsInt, IsNumberString } from 'class-validator';
 
 export class GameStartDto {
   @IsInt()
@@ -10,7 +10,7 @@ export class GameStartDto {
   @IsInt()
   deckId: number;
 
-  @IsInt()
+  @IsPositive()
   bet: number;
 }
 

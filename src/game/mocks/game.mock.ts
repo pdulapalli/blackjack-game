@@ -5,7 +5,7 @@ export const fakeGame_1: Game = {
   id: 1,
   currentTurn: Role.PLAYER,
   outcome: OutcomeState.PENDING,
-  bet: 0,
+  bet: 0.0,
   deckId: 1,
   playerId: 1,
   dealerId: 2,

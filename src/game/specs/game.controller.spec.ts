@@ -38,7 +38,7 @@ describe('GameController', () => {
         playerId: 1,
         dealerId: 2,
         deckId: 1,
-        bet: 0,
+        bet: 0.0,
       };
 
       const result = await gameController.startGame(createOpts);
