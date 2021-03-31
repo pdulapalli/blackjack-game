@@ -82,8 +82,6 @@ export class GameService {
   }
 
   async startGame(createInfo: GameStartDto): Promise<Game> {
-    let gameState = await this.createGame(createInfo);
-
     const [player, dealer] = await Promise.all([
       this.participantService.retrieveParticipant({
         participantId: `${createInfo.playerId}`,
@@ -92,6 +90,12 @@ export class GameService {
         participantId: `${createInfo.dealerId}`,
       }),
     ]);
+
+    if (player.money < createInfo.bet) {
+      throw new Error('Player does not have enough money to bet');
+    }
+
+    let gameState = await this.createGame(createInfo);
 
     // Place bet, and deduct amount from player
     await this.participantService.adjustMoney(player.id, -1 * createInfo.bet);
@@ -343,6 +347,10 @@ export class GameService {
     const participant = await this.participantService.retrieveParticipant({
       participantId: `${moveInfo.participantId}`,
     });
+
+    if (game.outcome !== OutcomeState.PENDING) {
+      throw new Error('Cannot move on concluded game');
+    }
 
     const isValidMove = this.checkActionValid(
       game.currentTurn,
