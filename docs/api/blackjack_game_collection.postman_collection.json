@@ -15,7 +15,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Kelvin\",\n    \"role\": \"PLAYER\",\n    \"money\": 0\n}",
+							"raw": "{\n    \"name\": \"Kelvin\",\n    \"role\": \"PLAYER\",\n    \"money\": 500\n}",
 							"options": {
 								"raw": {
 									"language": "json"
