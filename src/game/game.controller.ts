@@ -25,7 +25,7 @@ export class GameController {
   }
 
   @Delete(':id')
-  deleteGame(@Param() params: IdDto): Promise<void> {
+  deleteGame(@Param() params: IdDto): Promise<GameModel | null> {
     return this.gameSvc.deleteGame(params);
   }
 

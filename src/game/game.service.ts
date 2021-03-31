@@ -32,10 +32,10 @@ export class GameService {
     });
   }
 
-  async deleteGame({ id }: IdDto): Promise<void> {
+  async deleteGame({ id }: IdDto): Promise<Game | null> {
     const game = await this.retrieveGame({ id });
     if (!game) {
-      return;
+      return null;
     }
 
     const [player, dealer] = await Promise.all([
@@ -49,7 +49,7 @@ export class GameService {
 
     await this.cleanupGame(player, dealer, game);
 
-    await this.prisma.game.delete({
+    return this.prisma.game.delete({
       where: {
         id: Number.parseInt(id, 10),
       },
