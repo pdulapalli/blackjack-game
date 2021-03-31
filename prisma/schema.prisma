@@ -35,7 +35,7 @@ model Participant {
   playingGame Game?      @relation("PlayingRel")
   dealingGame Game?      @relation("DealingRel")
   role        Role
-  money       Int        @default(0)
+  money       Float      @default(0.00)
   moves       Move[]
 }
 
@@ -54,7 +54,7 @@ model Game {
   id          Int          @id @default(autoincrement())
   currentTurn Role         @default(PLAYER)
   outcome     OutcomeState @default(PENDING)
-  bet         Int          @default(0)
+  bet         Float        @default(0.00)
   playerScore Int          @default(0)
   dealerScore Int          @default(0)
   deckId      Int

@@ -50,14 +50,10 @@ describe('ParticipantController', () => {
       const createOpts = {
         name: 'Nemo',
         role: Role.PLAYER,
-        money: 200,
+        money: 200.0,
       };
 
-      const result = await participantController.createParticipant({
-        name: 'Nemo',
-        role: Role.PLAYER,
-        money: 200,
-      });
+      const result = await participantController.createParticipant(createOpts);
 
       expect(result).toMatchObject(createOpts);
       expect(result).toHaveProperty('id');

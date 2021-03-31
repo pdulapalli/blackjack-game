@@ -15,7 +15,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Kelvin\",\n    \"role\": \"PLAYER\",\n    \"money\": 500\n}",
+							"raw": "{\n    \"name\": \"Kelvin\",\n    \"role\": \"PLAYER\",\n    \"money\": 500.00\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -43,7 +43,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Celsius\",\n    \"role\": \"DEALER\",\n    \"money\": 0\n}",
+							"raw": "{\n    \"name\": \"Celsius\",\n    \"role\": \"DEALER\",\n    \"money\": 0.00\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -298,7 +298,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"playerId\": 1,\n    \"dealerId\": 2,\n    \"deckId\": 1,\n    \"bet\": 100\n}",
+							"raw": "{\n    \"playerId\": 1,\n    \"dealerId\": 2,\n    \"deckId\": 1,\n    \"bet\": 100.00\n}",
 							"options": {
 								"raw": {
 									"language": "json"

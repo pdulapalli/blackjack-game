@@ -21,7 +21,7 @@ fields. Make note of the dealer `id` from the response.
 {
     "name": "<desired-name>",
     "role": "DEALER",
-    "money": 0
+    "money": 0.00
 }
 ```
 
@@ -36,7 +36,7 @@ the game `id` from the response.
     "playerId": <playerId-from-previous>,
     "dealerId": <dealerId-from-previous>,
     "deckId": <deckId-from-previous>,
-    "bet": <any-positive-integer>
+    "bet": <any-positive-float>
 }
 ```
 

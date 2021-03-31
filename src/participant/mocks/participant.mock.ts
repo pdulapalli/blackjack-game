@@ -6,7 +6,7 @@ const fakeParticipant_1: Participant = {
   name: 'Aardvark',
   handId: 1,
   role: Role.PLAYER,
-  money: 0,
+  money: 0.0,
 };
 
 const fakeParticipant_2: Participant = {
@@ -14,7 +14,7 @@ const fakeParticipant_2: Participant = {
   name: 'Beetle',
   handId: 2,
   role: Role.DEALER,
-  money: 100,
+  money: 100.0,
 };
 
 const fakeParticipant_3: any = {
