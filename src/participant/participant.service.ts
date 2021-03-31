@@ -52,6 +52,19 @@ export class ParticipantService {
     });
   }
 
+  async retrieveScore(participantId: number): Promise<number> {
+    const { score } = await this.prisma.participant.findUnique({
+      where: {
+        id: participantId,
+      },
+      select: {
+        score: true,
+      },
+    });
+
+    return score;
+  }
+
   async adjustMoney(
     participantId: number,
     amount: number,

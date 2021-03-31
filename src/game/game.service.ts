@@ -1,5 +1,5 @@
 import { Game, Move, Participant } from '.prisma/client';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CollectionService } from '../collection/collection.service';
 import { ParticipantService } from '../participant/participant.service';
@@ -18,11 +18,15 @@ import { Role } from '@prisma/client';
 
 @Injectable()
 export class GameService {
+  private readonly logger: Logger;
+
   constructor(
     private prisma: PrismaService,
     private collectionService: CollectionService,
     private participantService: ParticipantService,
-  ) {}
+  ) {
+    this.logger = new Logger(GameService.name);
+  }
 
   async retrieveGame({ id }: IdDto): Promise<Game> {
     return this.prisma.game.findUnique({
@@ -128,6 +132,10 @@ export class GameService {
 
     const dealerScore = this.collectionService.calculateHandScore(
       dealerHandCards,
+    );
+
+    this.logger.log(
+      `Initial starting scores. Player: ${playerScore}. Dealer: ${dealerScore}`,
     );
 
     await Promise.all([
@@ -376,6 +384,15 @@ export class GameService {
       default:
         break;
     }
+
+    const [playerScore, dealerScore] = await Promise.all([
+      this.participantService.retrieveScore(game.playerId),
+      this.participantService.retrieveScore(game.dealerId),
+    ]);
+
+    this.logger.log(
+      `Participant ${participant.id} performed action ${move.action}. Player Score: ${playerScore}. Dealer Score: ${dealerScore}`,
+    );
 
     await this.handleGameResult(game.id);
 
