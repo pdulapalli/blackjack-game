@@ -70,6 +70,7 @@ model Game {
 enum OutcomeState {
   PLAYER_WIN
   DEALER_WIN
+  TIE
   PENDING
 }
 

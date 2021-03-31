@@ -259,6 +259,8 @@ export class GameService {
             outcome = OutcomeState.PLAYER_WIN;
           } else if (currentParticipant.score > playerScore) {
             outcome = OutcomeState.DEALER_WIN;
+          } else if (currentParticipant.score === playerScore) {
+            outcome = OutcomeState.TIE;
           } else {
             outcome = OutcomeState.PLAYER_WIN;
           }
@@ -442,6 +444,10 @@ export class GameService {
         break;
       case OutcomeState.DEALER_WIN:
         await this.participantService.adjustMoney(game.dealerId, winnings);
+        break;
+      case OutcomeState.TIE:
+        // Refund player
+        await this.participantService.adjustMoney(game.playerId, game.bet);
         break;
       default:
         break;
