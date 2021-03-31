@@ -1,5 +1,10 @@
 # blackjack-game
 
+
+## General Info
+
+More info is [available here](docs/INFO.md)
+
 ## Build
 
 ### Prerequisites
