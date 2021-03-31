@@ -1,5 +1,5 @@
 import { Game, Move, Participant } from '.prisma/client';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CollectionService } from '../collection/collection.service';
 import { ParticipantService } from '../participant/participant.service';
@@ -18,11 +18,15 @@ import { Role } from '@prisma/client';
 
 @Injectable()
 export class GameService {
+  private readonly logger: Logger;
+
   constructor(
     private prisma: PrismaService,
     private collectionService: CollectionService,
     private participantService: ParticipantService,
-  ) {}
+  ) {
+    this.logger = new Logger(GameService.name);
+  }
 
   async retrieveGame({ id }: IdDto): Promise<Game> {
     return this.prisma.game.findUnique({
@@ -32,10 +36,10 @@ export class GameService {
     });
   }
 
-  async deleteGame({ id }: IdDto): Promise<void> {
+  async deleteGame({ id }: IdDto): Promise<Game | null> {
     const game = await this.retrieveGame({ id });
     if (!game) {
-      return;
+      return null;
     }
 
     const [player, dealer] = await Promise.all([
@@ -49,7 +53,7 @@ export class GameService {
 
     await this.cleanupGame(player, dealer, game);
 
-    await this.prisma.game.delete({
+    return this.prisma.game.delete({
       where: {
         id: Number.parseInt(id, 10),
       },
@@ -82,8 +86,6 @@ export class GameService {
   }
 
   async startGame(createInfo: GameStartDto): Promise<Game> {
-    let gameState = await this.createGame(createInfo);
-
     const [player, dealer] = await Promise.all([
       this.participantService.retrieveParticipant({
         participantId: `${createInfo.playerId}`,
@@ -92,6 +94,12 @@ export class GameService {
         participantId: `${createInfo.dealerId}`,
       }),
     ]);
+
+    if (player.money < createInfo.bet) {
+      throw new Error('Player does not have enough money to bet');
+    }
+
+    let gameState = await this.createGame(createInfo);
 
     // Place bet, and deduct amount from player
     await this.participantService.adjustMoney(player.id, -1 * createInfo.bet);
@@ -124,6 +132,10 @@ export class GameService {
 
     const dealerScore = this.collectionService.calculateHandScore(
       dealerHandCards,
+    );
+
+    this.logger.log(
+      `Initial starting scores. Player: ${playerScore}. Dealer: ${dealerScore}`,
     );
 
     await Promise.all([
@@ -247,6 +259,8 @@ export class GameService {
             outcome = OutcomeState.PLAYER_WIN;
           } else if (currentParticipant.score > playerScore) {
             outcome = OutcomeState.DEALER_WIN;
+          } else if (currentParticipant.score === playerScore) {
+            outcome = OutcomeState.TIE;
           } else {
             outcome = OutcomeState.PLAYER_WIN;
           }
@@ -344,6 +358,10 @@ export class GameService {
       participantId: `${moveInfo.participantId}`,
     });
 
+    if (game.outcome !== OutcomeState.PENDING) {
+      throw new Error('Cannot move on concluded game');
+    }
+
     const isValidMove = this.checkActionValid(
       game.currentTurn,
       participant.role,
@@ -368,6 +386,15 @@ export class GameService {
       default:
         break;
     }
+
+    const [playerScore, dealerScore] = await Promise.all([
+      this.participantService.retrieveScore(game.playerId),
+      this.participantService.retrieveScore(game.dealerId),
+    ]);
+
+    this.logger.log(
+      `Participant ${participant.id} performed action ${move.action}. Player Score: ${playerScore}. Dealer Score: ${dealerScore}`,
+    );
 
     await this.handleGameResult(game.id);
 
@@ -417,6 +444,10 @@ export class GameService {
         break;
       case OutcomeState.DEALER_WIN:
         await this.participantService.adjustMoney(game.dealerId, winnings);
+        break;
+      case OutcomeState.TIE:
+        // Refund player
+        await this.participantService.adjustMoney(game.playerId, game.bet);
         break;
       default:
         break;

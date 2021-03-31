@@ -23,6 +23,7 @@ export enum OutcomeState {
   PLAYER_WIN = 'PLAYER_WIN',
   DEALER_WIN = 'DEALER_WIN',
   PENDING = 'PENDING',
+  TIE = 'TIE',
 }
 
 export class GameWinDto {

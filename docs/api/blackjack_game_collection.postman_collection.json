@@ -1,0 +1,429 @@
+{
+	"info": {
+		"_postman_id": "fe1dbedb-1291-4c16-9e89-0032ac0c1242",
+		"name": "Blackjack Game Collection",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Participant",
+			"item": [
+				{
+					"name": "Create player",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Kelvin\",\n    \"role\": \"PLAYER\",\n    \"money\": 500\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/participant",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"participant"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create dealer",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Celsius\",\n    \"role\": \"DEALER\",\n    \"money\": 0\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/participant",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"participant"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get participant",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/participant/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"participant",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List all",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/participant/list",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"participant",
+								"list"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Game",
+			"item": [
+				{
+					"name": "Moves",
+					"item": [
+						{
+							"name": "Show moves for game",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:3000/game/1/moves",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"game",
+										"1",
+										"moves"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Player - Hit",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"gameId\": 1,\n    \"participantId\": 1,\n    \"action\": \"HIT\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:3000/game/move",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"game",
+										"move"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Player - Stay",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"gameId\": 1,\n    \"participantId\": 1,\n    \"action\": \"STAY\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:3000/game/move",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"game",
+										"move"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Dealer - Stay",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"gameId\": 1,\n    \"participantId\": 2,\n    \"action\": \"STAY\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:3000/game/move",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"game",
+										"move"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Dealer - Hit",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"gameId\": 1,\n    \"participantId\": 2,\n    \"action\": \"HIT\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:3000/game/move",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "3000",
+									"path": [
+										"game",
+										"move"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Get game",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/game/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"game",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete game",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/game/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"game",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create game",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"playerId\": 1,\n    \"dealerId\": 2,\n    \"deckId\": 1,\n    \"bet\": 100\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/game",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"game"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Collection",
+			"item": [
+				{
+					"name": "Get contents DECK",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/collection/contents/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"collection",
+								"contents",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get hand PLAYER",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/collection/contents/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"collection",
+								"contents",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get hand DEALER",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/collection/contents/3",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"collection",
+								"contents",
+								"3"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create deck",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/collection/deck",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"collection",
+								"deck"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Hello",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000"
+				}
+			},
+			"response": []
+		}
+	]
+}
