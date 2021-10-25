@@ -1,5 +1,6 @@
 # blackjack-game
 
+Provides the necessary interface and core logic to mimic a round of blackjack.
 
 ## General Info
 
