@@ -3,7 +3,7 @@ WORKDIR /workspace
 COPY ./*.json ./
 COPY ./.* ./
 COPY ./prisma ./prisma
-RUN apk --no-cache add --virtual builds-deps build-base python
+RUN apk --no-cache add --virtual builds-deps build-base python3
 RUN npm ci
 EXPOSE 3000
 
