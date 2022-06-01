@@ -22,7 +22,8 @@ relevant instructions for your Operating System at
 
 Please navigate to the root directory of this project.
 
-Replace `<envName>` with `dev` or `production`, as desired.
+Replace `<envName>` with `dev` or `production`, as desired. Note that using
+`production` will **not** automatically perform database migrations.
 
 In a terminal session, please run:
 
